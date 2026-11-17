@@ -1,0 +1,12 @@
+@tailwind base;@tailwind components;@tailwind utilities;
+body{background:#fdfdfc;color:#0f1b2d}
+.hero-bg{background:radial-gradient(60% 50% at 0% 10%,#fdeedd 0,transparent 70%),radial-gradient(50% 50% at 100% 40%,#e3f6e8 0,transparent 70%),radial-gradient(50% 50% at 50% 70%,#e8edff 0,transparent 70%)}
+.btn{display:inline-flex;align-items:center;justify-content:center;border-radius:9999px;font-weight:600;padding:.7rem 1.4rem;transition:.15s}
+.btn-primary{background:linear-gradient(180deg,#3d63f5,#2442d6);color:#fff;box-shadow:0 6px 16px -4px rgba(45,79,232,.5)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{background:#fff;border:1px solid #e3e7ee}
+.btn-ghost:hover{background:#f4f6fa}
+.card{background:#fff;border:1px solid #e8ebf0;border-radius:1.25rem;padding:1.5rem}
+.eyebrow{font-size:.75rem;letter-spacing:.14em;font-weight:600;color:#6b7a90;text-transform:uppercase}
+.input{width:100%;border:1px solid #dfe3ea;border-radius:.75rem;padding:.7rem .9rem;background:#fff;outline:none}
+.input:focus{border-color:#2d4fe8;box-shadow:0 0 0 3px rgba(45,79,232,.15)}
