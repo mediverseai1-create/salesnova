@@ -1,18 +1,24 @@
-import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import SignOut from "@/components/SignOut";
+import { AppNav } from "@/components/AppNav";
+import { supabaseServer } from "@/lib/server";
+import Link from "next/link";
 
-const items = [["Briefing", "/app"], ["Next Best Actions", "/app/actions"], ["Follow-Up AI", "/app/followups"], ["Conversations", "/app/conversations"], ["Lead Finder", "/app/leads"], ["Ask", "/app/ask"], ["Billing", "/app/billing"]];
+export const dynamic = "force-dynamic";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  let org = "Workspace";
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    const { data } = await supabaseServer().from("organizations").select("name").limit(1).single();
+    if (data?.name) org = data.name;
+  }
   return (
-    <div className="min-h-screen md:flex bg-[#fafaf9]">
-      <aside className="md:w-60 md:min-h-screen border-b md:border-r bg-white p-4 md:p-5 flex md:block gap-4 overflow-x-auto">
-        <Link href="/" className="hidden md:block mb-8"><Logo /></Link>
-        <nav className="flex md:block gap-1 md:space-y-1 text-sm">
-          {items.map(([t, h]) => <Link key={h} href={h} className="block rounded-lg px-3 py-2 whitespace-nowrap hover:bg-slate-100">{t}</Link>)}
-        </nav>
-        <div className="md:mt-8"><SignOut /></div>
+    <div className="min-h-screen md:flex bg-[#fdfdfc]">
+      <aside className="md:w-[230px] md:min-h-screen md:sticky md:top-0 md:h-screen border-b md:border-b-0 md:border-r border-slate-100 bg-white p-5 flex flex-col">
+        <Link href="/" className="mb-6"><Logo /></Link>
+        <div className="text-[11px] tracking-widest text-slate-400 uppercase mb-3 truncate">{org}</div>
+        <AppNav />
+        <div className="mt-auto pt-6"><SignOut /></div>
       </aside>
       <main className="flex-1 p-6 md:p-10">{children}</main>
     </div>
