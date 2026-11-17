@@ -7,14 +7,15 @@ const PROMPTS: Record<string, (i: string) => string> = {
   followups: (i) => `You are SalesNova Follow-Up AI. For the contacts/context below decide who needs a follow-up, why, when, and write a short personalised message for each. Markdown.\n\n${i}`,
   conversations: (i) => `You are SalesNova Conversation Intelligence. Analyse this call transcript. Output markdown sections: Summary, Buyer intent, Sentiment, Objections, Commitments, Competitors mentioned, Decision criteria, Recommended next action.\n\nTRANSCRIPT:\n${i}`,
   leads: (i) => `You are SalesNova Lead Finder. Given this ideal customer description or customer list, produce an ideal customer profile and then score each candidate lead below it from 0-100 with one-line reasoning. Markdown.\n\n${i}`,
+  icp: (i) => `You are SalesNova Lead Finder. Build an ideal customer profile from this description. Markdown sections: Who they are (industry, size, geography), Buying triggers, Pain points, Best channels, Disqualifiers, Scoring criteria (weighted, totalling 100).\n\n${i}`,
   ask: (i) => `You are SalesNova. Answer the sales question using the data provided and cite the numbers used.\n\n${i}`,
 };
 
 export async function POST(req: Request, { params }: { params: { module: string } }) {
   const make = PROMPTS[params.module];
   if (!make) return NextResponse.json({ error: "Unknown module" }, { status: 404 });
-  const { input } = await req.json();
-  if (!input || String(input).trim().length < 3) return NextResponse.json({ error: "Please provide some input." }, { status: 400 });
+  const { input = "", audio } = await req.json();
+  if (!audio && (!input || String(input).trim().length < 3)) return NextResponse.json({ error: "Please provide some input." }, { status: 400 });
 
   const configured = !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let orgId: string | null = null;
@@ -30,9 +31,9 @@ export async function POST(req: Request, { params }: { params: { module: string 
   }
 
   try {
-    const output = await gemini(make(String(input).slice(0, 60000)));
+    const output = await gemini(make(audio ? String(input).slice(0, 2000) + "\n[The call recording is attached as audio. Transcribe and analyse it.]" : String(input).slice(0, 60000)), false, audio);
     if (sb && orgId) {
-      await sb.from("records").insert({ org_id: orgId, kind: params.module, title: String(input).slice(0, 60), input: String(input).slice(0, 20000), output: { text: output } });
+      await sb.from("records").insert({ org_id: orgId, kind: params.module, title: (String(input).trim().slice(0, 60) || "Call recording"), input: String(input).slice(0, 20000), output: { text: output } });
       const { data: o } = await sb.from("organizations").select("credits").eq("id", orgId).single();
       await sb.from("organizations").update({ credits: Math.max(0, (o?.credits ?? 5) - 5) }).eq("id", orgId);
     }
